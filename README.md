@@ -1,6 +1,6 @@
 # 校卫队值班表
 
-基于 [aiastia/shift-scheduler](https://github.com/aiastia/shift-scheduler) 的 Vue 3 / Pinia 项目改造。上游 README 原文与文件 SHA 保存在 UPSTREAM_README.md、UPSTREAM.json，原始代码保留在 Git 初始提交。上游 README 声明 MIT，未代替上游填写版权信息。
+基于 [aiastia/shift-scheduler](https://github.com/aiastia/shift-scheduler) 的 Vue 3 / Pinia 项目改造。上游 README 原文与文件 SHA 保存在 UPSTREAM_README.md、UPSTREAM.json；本仓库保留改造后的源码及上游来源信息。上游 README 声明 MIT，未代替上游填写版权信息。
 
 ## GitHub Pages 发布
 
