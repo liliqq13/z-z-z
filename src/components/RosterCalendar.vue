@@ -1,0 +1,13 @@
+<script setup>
+import {computed} from 'vue'
+import {addDays,dateRange,availableAssignment,isShiftScheduled} from '../lib/engine.js'
+const props=defineProps({month:String,today:String,columns:Array,assignments:Array,records:Object,leaves:{type:Array,default:()=>[]}})
+const emit=defineEmits(['day','cell'])
+const dates=computed(()=>{const first=props.month+'-01',dow=new Date(first+'T12:00:00').getDay(),start=addDays(first,-((dow+6)%7));return dateRange(start,addDays(start,41))})
+function groups(date){return props.columns.map(shift=>({shift,entries:props.assignments.filter(a=>a.date===date&&a.shiftId===shift.id)})).filter(g=>g.entries.length||(['activity','other'].includes(g.shift.kind)&&isShiftScheduled(g.shift,date)))}
+function count(date){return props.assignments.filter(a=>a.date===date&&availableAssignment(a,props.records)).length}
+function leaveNames(date){return props.leaves.filter(l=>l.start<=date&&l.end>=date).map(l=>l.staffName)}
+function entryNames(entries){return entries.map(a=>a.staffName+(['leave','absent'].includes(props.records[a.id]?.status)?'（'+(props.records[a.id].status==='leave'?'请假':'缺勤')+'）':'')).join('、')}
+const label=s=>s.kind==='patrol'?s.vehicleName:s.name
+</script>
+<template><div class="month-calendar"><div class="calendar-weekdays"><span v-for="d in ['周一','周二','周三','周四','周五','周六','周日']" :key="d">{{d}}</span></div><div class="calendar-grid"><div v-for="date in dates" :key="date" class="calendar-day" :class="{outside:!date.startsWith(month),today:date===today}"><button class="calendar-date" :aria-label="date+' 查看当天安排'" @click="emit('day',date)"><strong>{{Number(date.slice(8))}}</strong><small v-if="date===today">今天</small></button><span v-if="leaveNames(date).length" class="calendar-leave" :title="leaveNames(date).join('、')+'请假'">{{leaveNames(date).length}} 人请假</span><div class="calendar-posts"><button v-for="g in groups(date)" :key="g.shift.id" class="calendar-chip" :style="{'--post-color':g.shift.color||'#72957c'}" :title="label(g.shift)+'：'+(entryNames(g.entries)||'待安排')" @click="emit('cell',date,g.shift)"><strong>{{label(g.shift)}}</strong><span>{{g.entries.length?entryNames(g.entries):g.shift.start+'—'+g.shift.end+' 待安排'}}</span></button><button v-if="!groups(date).length" class="calendar-add" :aria-label="date+' 添加值班'" @click="emit('day',date)">＋ 安排</button></div><button class="calendar-mobile" :aria-label="date+' 查看或安排值班'" @click="emit('day',date)"><span v-if="count(date)">{{count(date)}} 人</span><span v-else>＋</span><span class="calendar-dots"><i v-for="g in groups(date)" :key="g.shift.id" :style="{background:g.shift.color||'#72957c'}"></i></span></button></div></div><div class="calendar-help">点击日期查看当天安排，点击岗位直接修改。</div></div></template>
